@@ -1,5 +1,6 @@
 const express = require('express')
 const app = express()
+const router = require('./router')
 
 //  Make public files accessible (css/browserJS)
 app.use(express.static('public'))
@@ -9,8 +10,6 @@ app.set('views', 'views')
 //  We tell express to use the EJS template engine - install via NPM
 app.set('view engine', 'ejs')
 
-app.get('/', function (req, res) {
-  res.render('home-guest')  
-})
+app.use('/', router)
 
 app.listen(3000)
