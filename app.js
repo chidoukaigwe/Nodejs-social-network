@@ -1,5 +1,22 @@
 const express = require('express')
+//  Cache User Sessions
+const session = require('express-session')
+//  Cache user Sessions on the DB - capitalised to indicate we will be creating objects from this.
+const MongoStore = require('connect-mongo')(session)
 const app = express()
+
+//  Boilerplate Config Code
+let sessionOptions = session({
+    secret: 'Javascript is so cool',
+    store: new MongoStore({client: require('./db')}),
+    resave: false,
+    saveUninitialized: false,
+    // Max 1 day before cookie expires
+    cookie: {maxAge: 1000 * 60 * 60 * 24, httpOnly: true}
+})
+
+app.use(sessionOptions)
+
 const router = require('./router')
 
 //  [ two most common ways of accepting data across the web ]

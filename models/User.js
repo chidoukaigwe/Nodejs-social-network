@@ -1,5 +1,6 @@
+const bcrypt = require('bcryptjs')
 //  usersColletion variable we are able to perform CRUD on
-const usersCollection = require('../db').collection('users')
+const usersCollection = require('../db').db().collection('users')
 const validator = require('validator')
 
 //  Constructor Function - For User Object
@@ -30,7 +31,7 @@ User.prototype.validate = function () {
   if (!validator.isEmail(this.data.email)) { this.errors.push('You must provide a valid email address.') }
   if (this.data.password === '') { this.errors.push('You must provide a password.') }
   if (this.data.password.length > 0 && this.data.password.length < 12) { this.errors.push('Password must be at least 12 characters.') }
-  if (this.data.password.lenght > 100) { this.errors.push('Password cannot exceed 100 characters') }
+  if (this.data.password.lenght > 50) { this.errors.push('Password cannot exceed 50 characters') }
   if (this.data.username.length > 0 && this.data.username.length < 3) { this.errors.push('Username must be at least 3 characters.') }
   if (this.data.username.lenght > 30) { this.errors.push('Username cannot exceed 30 characters') }
 }
@@ -43,7 +44,8 @@ User.prototype.login = function () {
     //  MongoDB findOne() has a callback function - Which is also a promise. We want to be able to access the Document that the Database might find.
     //  So we pass through the variable attemptedUser (which will have data attached to it as it is part of the MongoDB callback)
     usersCollection.findOne({username: this.data.username}).then( (attemptedUser) => {
-      if (attemptedUser && attemptedUser.password == this.data.password) { 
+      //  bcrypt will perform the password comparison
+      if (attemptedUser && bcrypt.compareSync(this.data.password,attemptedUser.password)) { 
         resolve("Congrats")
     } else {
         reject("Invalid username / password")
@@ -62,6 +64,9 @@ User.prototype.register = function () {
 
   //  Check if there are errors in the errors array
   if (!this.errors.length) {
+    //  Hash User Password 
+    let salt = bcrypt.genSaltSync(10)
+    this.data.password = bcrypt.hashSync(this.data.password, salt)
     //  Store new user object in the DB 
     usersCollection.insertOne(this.data)
   }

@@ -6,6 +6,8 @@ exports.login = function (req, res) {
   let user = new User(req.body)
   //  Passing this function as an argument into the login function
   user.login().then(function (result) {
+    //  Add new properties onto the session object  - our REQ object has this NEW SESSION OBJ that has this user property PER browser request
+    req.session.user = {username : user.data.username}
     res.send(result)
   }).catch(function (err) {
     res.send(err)
@@ -27,5 +29,9 @@ exports.register = function (req, res) {
 }
 
 exports.home = function (req, res) {
-  res.render('home-guest')
+  if (req.session.user) {
+    res.send('Welcome to the actual application')
+  } else {
+    res.render('home-guest')
+  }
 }
