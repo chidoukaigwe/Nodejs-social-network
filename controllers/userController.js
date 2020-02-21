@@ -2,8 +2,14 @@
 const User = require('../models/User')
 
 //  req & res come from the callback function made within router.js and therefore router.js can pass the two args (req & res)
-exports.login = function () {
-
+exports.login = function (req, res) {
+  let user = new User(req.body)
+  //  Passing this function as an argument into the login function
+  user.login().then(function (result) {
+    res.send(result)
+  }).catch(function (err) {
+    res.send(err)
+  })
 }
 
 exports.logout = function () {

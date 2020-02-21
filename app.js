@@ -17,4 +17,5 @@ app.set('view engine', 'ejs')
 
 app.use('/', router)
 
-app.listen(3000)
+//  Still creating a Node Express App - we removed the app.listen() as this file is the bootstrap - refer to db.js
+module.exports = app

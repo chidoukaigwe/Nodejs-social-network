@@ -10,4 +10,7 @@ router.get('/', userController.home)
 //  Post Route For User Registering On App
 router.post('/register', userController.register)
 
+//  Post route for User Login Form
+router.post('/login', userController.login)
+
 module.exports = router
