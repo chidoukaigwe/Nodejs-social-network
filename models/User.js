@@ -1,7 +1,10 @@
 const bcrypt = require('bcryptjs')
 //  usersColletion variable we are able to perform CRUD on
 const usersCollection = require('../db').db().collection('users')
+//  Validate User Input [For Signup Forms]
 const validator = require('validator')
+//  MD5 for passwords and Gravatar
+const md5 = require('md5')
 
 //  Constructor Function - For User Object
 let User = function (data) {
@@ -26,14 +29,33 @@ User.prototype.cleanUp = function () {
 
 //  Validate The User Input Form
 User.prototype.validate = function () {
-  if (this.data.username === '') { this.errors.push('You must provide a username.') }
-  if (this.data.username != '' && !validator.isAlphanumeric(this.data.username)) {this.errors.push('Username can only contain letters and numbers')}
-  if (!validator.isEmail(this.data.email)) { this.errors.push('You must provide a valid email address.') }
-  if (this.data.password === '') { this.errors.push('You must provide a password.') }
-  if (this.data.password.length > 0 && this.data.password.length < 12) { this.errors.push('Password must be at least 12 characters.') }
-  if (this.data.password.lenght > 50) { this.errors.push('Password cannot exceed 50 characters') }
-  if (this.data.username.length > 0 && this.data.username.length < 3) { this.errors.push('Username must be at least 3 characters.') }
-  if (this.data.username.lenght > 30) { this.errors.push('Username cannot exceed 30 characters') }
+  return new Promise(async (resolve, reject) => {
+    if (this.data.username === '') { this.errors.push('You must provide a username.') }
+    if (this.data.username != '' && !validator.isAlphanumeric(this.data.username)) {this.errors.push('Username can only contain letters and numbers')}
+    if (!validator.isEmail(this.data.email)) { this.errors.push('You must provide a valid email address.') }
+    if (this.data.password === '') { this.errors.push('You must provide a password.') }
+    if (this.data.password.length > 0 && this.data.password.length < 12) { this.errors.push('Password must be at least 12 characters.') }
+    if (this.data.password.lenght > 50) { this.errors.push('Password cannot exceed 50 characters') }
+    if (this.data.username.length > 0 && this.data.username.length < 3) { this.errors.push('Username must be at least 3 characters.') }
+    if (this.data.username.lenght > 30) { this.errors.push('Username cannot exceed 30 characters') }
+  
+    //  Only if username is valid then check to see if its already taken
+    if (this.data.username.length > 2 && this.data.username.length < 31 && validator.isAlphanumeric(this.data.username)) {
+      //  Assign A Variable & Check DB For Username Input - Mongo - findOne - returns a promise
+      let usernameExists = await usersCollection.findOne({username: this.data.username})
+      //  If UsernameExists run the error
+      if (usernameExists) {this.errors.push('that username is already taken')}
+    }
+  
+      //  Only if email is valid then check to see if its already taken
+      if (validator.isEmail(this.data.email)) {
+        //  Assign A Variable & Check DB For email Input - Mongo - findOne - returns a promise
+        let emailExists = await usersCollection.findOne({email: this.data.email})
+        //  If emailExists run the error
+        if (emailExists) {this.errors.push('That email is already being used')}
+      }
+      resolve()
+  })
 }
 
 User.prototype.login = function () {
@@ -46,6 +68,10 @@ User.prototype.login = function () {
     usersCollection.findOne({username: this.data.username}).then( (attemptedUser) => {
       //  bcrypt will perform the password comparison
       if (attemptedUser && bcrypt.compareSync(this.data.password,attemptedUser.password)) { 
+        //  We need to bring the attempting users full data credentials to the request when logging in - as the above code is simply for checking for username
+        this.data = attemptedUser
+        //  Populate a property on our User object, called Avatar
+        this.getAvatar()
         resolve("Congrats")
     } else {
         reject("Invalid username / password")
@@ -56,20 +82,30 @@ User.prototype.login = function () {
   })
 }
 
-User.prototype.register = function () {
-  // Step 1 Validate User Data
-  this.cleanUp()
-  this.validate()  
-  // Step 2 Only If there are no validation errors then save the user data into a User DB 
+User.prototype.register = function() {
+  return new Promise(async (resolve, reject) => {
+    // Step 1 Validate User Data
+    this.cleanUp()
+    await this.validate()  
+    // Step 2 Only If there are no validation errors then save the user data into a User DB 
+  
+    //  Check if there are errors in the errors array
+    if (!this.errors.length) {
+      //  Hash User Password 
+      let salt = bcrypt.genSaltSync(10)
+      this.data.password = bcrypt.hashSync(this.data.password, salt)
+      //  Store new user object in the DB 
+      await usersCollection.insertOne(this.data)
+      this.getAvatar()
+      resolve()
+    } else {
+      reject(this.errors)
+    }
+  })
+}
 
-  //  Check if there are errors in the errors array
-  if (!this.errors.length) {
-    //  Hash User Password 
-    let salt = bcrypt.genSaltSync(10)
-    this.data.password = bcrypt.hashSync(this.data.password, salt)
-    //  Store new user object in the DB 
-    usersCollection.insertOne(this.data)
-  }
+User.prototype.getAvatar = function() {
+  this.avatar = `https://gravatar.com/avatar/${md5(this.data.email)}?s=128`
 }
 
 module.exports = User

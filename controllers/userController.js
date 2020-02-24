@@ -7,31 +7,49 @@ exports.login = function (req, res) {
   //  Passing this function as an argument into the login function
   user.login().then(function (result) {
     //  Add new properties onto the session object  - our REQ object has this NEW SESSION OBJ that has this user property PER browser request
-    req.session.user = {username : user.data.username}
-    res.send(result)
+    req.session.user = {avatar: user.avatar, username : user.data.username}
+    //  Manually telling session package to SAVE SESSION TO DB - once done invoke callback function and redirect user to homepage.
+    req.session.save(function () {
+      res.redirect('/')
+    })
   }).catch(function (err) {
-    res.send(err)
+    // Persistent memory of a specific request - Storing failed login attempt in the database (leverage sessions) 
+    // Flash package - adds a flash object - onto the REQUEST obj
+    req.flash('errors', err)  
+    req.session.save(function() {
+      res.redirect('/')
+    })
   })
 }
 
-exports.logout = function () {
-    
+exports.logout = function (req, res) {
+    req.session.destroy(function () {
+      res.redirect('/')
+    })
 }
 
 exports.register = function (req, res) {
   let user = new User(req.body)
-  user.register()
-  if (user.errors.length) {
-    res.send(user.errors)
-  } else {
-    res.send('Congrats there are no errors.')
-  }
+  user.register().then(() => {
+    req.session.user = {username:user.data.username, avatar: user.avatar}
+    req.session.save(function () {
+      res.redirect('/')
+    })
+  }).catch((regErrors) => {
+    regErrors.forEach(function(error) {
+      req.flash('regErrors', error)
+    })
+    req.session.save(function () {
+      res.redirect('/')
+    })
+  })
+
 }
 
 exports.home = function (req, res) {
   if (req.session.user) {
-    res.send('Welcome to the actual application')
+    res.render('home-dashboard', {username: req.session.user.username, avatar: req.session.user.avatar})
   } else {
-    res.render('home-guest')
+    res.render('home-guest', {errors: req.flash('errors'), regErrors: req.flash('regErrors')})
   }
 }

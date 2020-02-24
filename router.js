@@ -13,4 +13,7 @@ router.post('/register', userController.register)
 //  Post route for User Login Form
 router.post('/login', userController.login)
 
+// Post route for User Logout Form 
+router.post('/logout', userController.logout)
+
 module.exports = router

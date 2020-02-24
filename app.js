@@ -1,8 +1,12 @@
+//  File we add new request features
+
 const express = require('express')
 //  Cache User Sessions
 const session = require('express-session')
 //  Cache user Sessions on the DB - capitalised to indicate we will be creating objects from this.
 const MongoStore = require('connect-mongo')(session)
+//  Enabled Flash Messages 
+const flash = require('connect-flash')
 const app = express()
 
 //  Boilerplate Config Code
@@ -15,7 +19,10 @@ let sessionOptions = session({
     cookie: {maxAge: 1000 * 60 * 60 * 24, httpOnly: true}
 })
 
+//  Invoking Sessions
 app.use(sessionOptions)
+//  Invoking Flash Messages Into APP
+app.use(flash())
 
 const router = require('./router')
 
