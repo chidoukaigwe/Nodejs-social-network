@@ -1,0 +1,78 @@
+npm install validator [validate emails]
+npm install mongodb
+npm install dotenv
+
+added .env file to gitignore file 
+create a .example.env file and copy contents of .env to .example.env
+
+Node Js Notes
+-------------
+Command - npm init -y [creates a package.json]
+Command - npm install express [installs express modules]
+
+Auto Refreshing Node Server
+--------------------------
+Command - npm install nodemon
+
+*We are going to run Nodemon locally instead of Globally*
+
+- open package.json
+
+*In the package.json file, look for scripts section - as you can have a script run from the package.json file on load
+
+EXAMPLE
+-------
+  "scripts": {
+    "watch": "nodemon server", * THIS IS WHAT WE ARE AFTER *
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+
+Command - npm run watch *[watch refers to the name we gave in the package.json]* - - - when we cancel the server running we use this command again to start up the server
+
+
+Install MongoDB Driver For NodeJS
+---------------------------------
+* Be sure to quit the NodeJS server *
+Command - npm install mongodb * Official package that gives NodeJS the ability to work with MongoDB *
+
+---------------------------
+
+Mongo DB Details [Todo App]
+---------------------------
+Database - TodoApp
+Username - todoAppUser
+Password - Z8YNnIq2VmWr8c6Z
+mongodb+srv://todoAppUser:Z8YNnIq2VmWr8c6Z@cluster0-fpr8d.mongodb.net/DATABASE-NAME?retryWrites=true&w=majority
+
+
+NPM PACKAGES
+------------
+ * npm sanitize-html
+ * npm install bcryptjs [hashing passwords]
+ * npm install dotenv
+ * npm install validator
+ * npm install mongodb
+ * npm install express-session
+ * npm install connect-mongo [store session data in the DB]
+
+VS CODE EXTENSIONS
+------------------
+Axios Snippets
+Format HTML in PHP
+Go To Method
+Heroku
+Heroku-Cli
+Javascript (ES6) Code Snippets
+Javascript Snippet Pack
+Live Server
+Mongo Snippets For Node JS
+Nodejs Snippets
+PHP Class Generator
+PHP Debug
+PHP DocBlocker
+PHP Extension Pack
+PHP IntelliSense
+PHP Namespace Resolver
+StandardJS
+Wordpress Snippet 

@@ -24,6 +24,14 @@ app.use(sessionOptions)
 //  Invoking Flash Messages Into APP
 app.use(flash())
 
+//  app.use() is telling express run this function for every request
+//  All app.use before the router function kicks in is invoked before page load
+app.use(function (req, res, next) {
+    //  add any objects or properties onto this locals obj
+    res.locals.user = req.session.user
+    next()
+})
+
 const router = require('./router')
 
 //  [ two most common ways of accepting data across the web ]
