@@ -26,7 +26,20 @@ app.use(flash())
 
 //  app.use() is telling express run this function for every request
 //  All app.use before the router function kicks in is invoked before page load
+//  res.locals allows the EJS Templates to use all variables
 app.use(function (req, res, next) {
+
+    // make all error and sucess flash messages available from all templates
+    res.locals.errors = req.flash('errors')
+    res.locals.success = req.flash('success')
+
+    //  make current user id available on the req object 
+    if (req.session.user) {
+        req.visitorId = req.session.user._id
+    }else{
+        req.visitorId = 0
+    }
+    //  make user session data available from within view templates
     //  add any objects or properties onto this locals obj
     res.locals.user = req.session.user
     next()

@@ -7,6 +7,7 @@ const userController = require('./controllers/userController')
 const postController = require('./controllers/postController')
 
 //  User Related Routes
+//=====================
 
 //  Get Homepage
 router.get('/', userController.home)
@@ -21,6 +22,7 @@ router.post('/login', userController.login)
 router.post('/logout', userController.logout)
 
 //  Post Related Routes 
+//=====================
 
 router.get('/create-post', userController.mustBeLoggedIn, postController.viewCreateScreen)
 
@@ -30,5 +32,13 @@ router.post('/create-post', userController.mustBeLoggedIn, postController.create
 //Get Single Post 
 router.get('/post/:id', postController.viewSingle)
 
+//  Profile Related Posts 
+//=======================
+router.get('/profile/:username', userController.ifUserExists, userController.profilePostsScreen)
 
+//Get edited post
+router.get('/post/:id/edit', postController.viewEditScreen)
+
+//Save Updates To A Post 
+router.post('/post/:id/edit', postController.edit)
 module.exports = router
