@@ -1,4 +1,5 @@
 const postsCollection = require('../db').db().collection('posts')
+const sanitizeHTML = require('sanitize-html')
 //  Store ID's in Mongo Object ID Format 
 const ObjectID = require('mongodb').ObjectID
 
@@ -20,11 +21,10 @@ Post.prototype.cleanUp = function() {
     if (typeof(this.data.title) != 'string') {this.data.title = ''}
     if (typeof(this.data.body) != 'string') {this.data.body = ''}
 
-    // Get Rid Of Any Bogus Properties
 
     this.data = {
-      title: this.data.title.trim(),  
-      body: this.data.body.trim(),
+      title: sanitizeHTML(this.data.title.trim(), {allowedTags: [], allowedAttributes: {}}),  
+      body: sanitizeHTML(this.data.body.trim(), {allowedTags: [], allowedAttributes: {}}),
       createdDate: new Date(),
       author: ObjectID(this.userid)
     }
@@ -54,8 +54,9 @@ Post.prototype.create = function() {
 
         if (!this.errors.length) {
             //  Save post into database - Mongo DB returns promises
-            postsCollection.insertOne(this.data).then( () => {
-                resolve()
+            postsCollection.insertOne(this.data).then( (info) => {
+                //Mongo DB has an array called ops
+                resolve(info.ops[0]._id)
             }).catch(() => {
                 this.errors.push('Please try again later')
                 reject(this.errors)

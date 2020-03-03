@@ -7,6 +7,8 @@ const session = require('express-session')
 const MongoStore = require('connect-mongo')(session)
 //  Enabled Flash Messages 
 const flash = require('connect-flash')
+const markdown = require('marked')
+const sanitizeHTML = require('sanitize-html')
 const app = express()
 
 //  Boilerplate Config Code
@@ -28,6 +30,11 @@ app.use(flash())
 //  All app.use before the router function kicks in is invoked before page load
 //  res.locals allows the EJS Templates to use all variables
 app.use(function (req, res, next) {
+
+    // makr our markdown function available from within ejs templates
+    res.locals.filterUserHtml = function (content) {
+        return sanitizeHTML(markdown(content), {allowedTags:['p', 'br', 'ol', 'li', 'ul', 'strong', 'bold', 'i', 'em', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'], allowedAttributes:{}})
+    }
 
     // make all error and sucess flash messages available from all templates
     res.locals.errors = req.flash('errors')
