@@ -126,6 +126,7 @@ Post.reusablePostQuery = function(uniqueOperations, visitorId) {
         posts = posts.map(function(post){
             //post.authorId is a mongo object
             post.isVisitorOwner = post.authorId.equals(visitorId) 
+            post.authorId = undefined
             post.author = {
                 username: post.author.username,
                 avatar: new User(post.author, true).avatar
@@ -168,6 +169,20 @@ Post.findByAuthorId = function(authorId) {
 
 }
 
+Post.search = function (searchTerm) {
+    return new Promise( async (resolve, reject) => {
+        if (typeof(searchTerm)  == 'string') {
+            let posts = await Post.reusablePostQuery([
+                // Not looking for exact value match - looking for the text that contains the words from the search term
+                {$match: {$text: {$search: searchTerm}}},
+                {$sort: {score: {$meta: 'textScore'}}}
+            ])
+            resolve(posts)
+        }else{
+            reject()
+        }
+    })
+}
 
 
 module.exports = Post
