@@ -4,6 +4,10 @@ const User = require('../models/User')
 //  Bring in Post Model
 const Post = require('../models/Post')
 
+// Bring in Follow Model
+const Follow = require('../models/Follow')
+
+
 exports.mustBeLoggedIn = function(req, res, next) {
   if (req.session.user) {
     next()
@@ -13,6 +17,26 @@ exports.mustBeLoggedIn = function(req, res, next) {
       res.redirect('/')
     })
   }
+}
+
+exports.sharedProfileData = async function (req, res, next) {
+
+  let isVisitorsProfile = false
+
+  // next() calls the next function assigned to the route
+  let isFollowing = false
+
+  if (req.session.user) {
+    isVisitorsProfile = req.profileUser._id.equals(req.session.user._id)
+    isFollowing = await Follow.isVisitorFollowing(req.profileUser._id, req.visitorId)
+  }
+
+  // Add this onto the request object
+  req.isFollowing = isFollowing
+  req.isVisitorsProfile = isVisitorsProfile
+
+  next()
+
 }
 
 //  req & res come from the callback function made within router.js and therefore router.js can pass the two args (req & res)
@@ -95,12 +119,32 @@ Post.findByAuthorId(req.profileUser._id).then(function (posts) {
   res.render('profile', {
     posts: posts,
     profileUsername: req.profileUser.username,
-    profileAvatar: req.profileUser.avatar
+    profileAvatar: req.profileUser.avatar,
+    isFollowing: req.isFollowing,
+    isVisitorsProfile: req.isVisitorsProfile
   })
   
 }).catch(function (){
   res.render('404')
 })
 
-  
 }
+
+exports.profileFollowersScreen = async function (req, res) {
+
+  try {
+    let followers = await Follow.getFollowersById(req.profileUser._id)
+    res.render('profile-followers', {
+      followers: followers,
+      profileUsername: req.profileUser.username,
+      profileAvatar: req.profileUser.avatar,
+      isFollowing: req.isFollowing,
+      isVisitorsProfile: req.isVisitorsProfile
+    })
+  } catch (error) {
+      res.render('404', error)
+  }
+
+}
+
+  
