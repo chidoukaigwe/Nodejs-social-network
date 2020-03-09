@@ -7,6 +7,23 @@ const Post = require('../models/Post')
 // Bring in Follow Model
 const Follow = require('../models/Follow')
 
+exports.doesUsernameExist = function(req, res) {
+
+  User.findByUsername(req.body.username).then(() => {
+    res.json(true)
+  }).catch(() => {
+    res.json(false)
+  })
+
+}
+
+exports.doesEmailExist = async function(req, res) {
+
+let emailBool = await User.doesEmailExist(req.body.email)
+
+res.json(emailBool)
+
+}
 
 exports.mustBeLoggedIn = function(req, res, next) {
   if (req.session.user) {
@@ -48,8 +65,6 @@ exports.sharedProfileData = async function (req, res, next) {
   req.followerCount = followerCount
   req.followingCount = followingCount
 
-
-  
   next()
 
 }
@@ -108,6 +123,9 @@ exports.register = function (req, res) {
 }
 
 exports.home = async function (req, res) {
+
+try{
+
   if (req.session.user) {
     //Fetch Feed Of Posts For Current User
     let posts = await Post.getFeed(req.session.user._id)
@@ -115,6 +133,13 @@ exports.home = async function (req, res) {
   } else {
     res.render('home-guest', {regErrors: req.flash('regErrors')})
   }
+
+}catch(error){
+  res.render('home-dashboard2')
+}
+ 
+
+
 }
 
 exports.ifUserExists = function(req, res, next) {
@@ -136,6 +161,7 @@ Post.findByAuthorId(req.profileUser._id).then(function (posts) {
   res.render('profile', {
     currentPage:"posts",
     posts: posts,
+    title: `Profile for ${req.profileUser.username}`,
     profileUsername: req.profileUser.username,
     profileAvatar: req.profileUser.avatar,
     isFollowing: req.isFollowing,

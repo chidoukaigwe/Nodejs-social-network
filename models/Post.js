@@ -5,7 +5,7 @@ const sanitizeHTML = require('sanitize-html')
 const ObjectID = require('mongodb').ObjectID
 
 const User = require('./User')
-// const Follow = require('./Follow')
+
 
 // Constructor Function
 let Post = function (data, userid, requestedPostId) {

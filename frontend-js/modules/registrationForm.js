@@ -8,12 +8,12 @@ export default class RegistrationForm {
         this.insertValidationElements()
         this.username = document.querySelector('#username-register')
         this.username.previousValue = ''
-        this.username.isUnique = false
         this.email = document.querySelector('#email-register')
         this.email.previousValue = ''
-        this.email.isUnique = false
         this.password = document.querySelector('#password-register')
-        
+        this.password.previousValue = ''
+        this.username.isUnique = false
+        this.email.isUnique = false
         this.events()
 
     }
@@ -37,6 +37,8 @@ export default class RegistrationForm {
         this.password.addEventListener('keyup', () => {
             this.isDifferent(this.password, this.passwordHandler)
         })
+
+        // Blur Events
 
         this.username.addEventListener('blur', () => {
             this.isDifferent(this.username, this.usernameHandler)
@@ -62,13 +64,7 @@ export default class RegistrationForm {
         this.passwordImmediately()
         this.passwordAfterDelay()
 
-        if (
-            this.username.isUnique && 
-            !this.username.errors && 
-            this.email.isUnique &&
-            !this.email.errors &&
-            !this.password.errors
-            ) 
+        if (this.username.isUnique && !this.username.errors && this.email.isUnique && !this.email.errors && !this.password.errors) 
             {
             this.form.submit()
             }
@@ -99,31 +95,41 @@ export default class RegistrationForm {
         this.username.timer = setTimeout( () => this.usernameAfterDelay(), 800)
     }
 
-    passwordHandler() {
-        this.password.errors = false
-        this.passwordImmediately()
-        clearTimeout(this.password.timer)
-        // Creating a timer property on the username object
-        this.password.timer = setTimeout( () => this.passwordAfterDelay(), 800)
-    }
-
-    passwordImmediately() {
-        
-        if (this.password.value.length > 50) {
-            this.showValidationErrors(this.password, 'Password cannot exceed 50 characters')
+    usernameImmediately() {
+        if (this.username.value != '' && !/^([a-zA-Z0-9]+)$/.test(this.username.value)) {
+            this.showValidationErrors(this.username, 'Username can only contain letters and numbers')
         }
 
-        if (!this.password.errors) {
-            this.hideValidationErrors(this.password)
+        if (this.username.value.length > 30) {
+            this.showValidationErrors(this.username, 'Username cannot exceed 30 characters')
+        }
+
+        if (!this.username.errors) {
+            this.hideValidationErrors(this.username)
         }
     }
 
-    passwordAfterDelay() {
-        
-        if (this.password.value.length < 12) {
-            this.showValidationErrors(this.password, 'Password must be at least 12 characters')
+    usernameAfterDelay() {
+
+        if (this.username.value.length < 3) {
+            this.showValidationErrors(this.username, 'Username must be at least 3 characters')
         }
 
+        if (!this.username.errors) {
+
+            axios.post('/doesUsernameExist', {username: this.username.value}).then((response) => {
+                if (response.data) {
+                    this.showValidationErrors(this.username, 'That username is already taken.')
+                    this.username.isUnique = false
+                }else{
+                    this.username.isUnique = true
+                }
+            }).catch((error) =>{
+                console.log('please try again later, creating a username caused some issues')
+            })
+
+        }
+       
     }
 
     emailHandler() {
@@ -159,19 +165,31 @@ export default class RegistrationForm {
 
     }
 
+    passwordHandler() {
+        this.password.errors = false
+        this.passwordImmediately()
+        clearTimeout(this.password.timer)
+        // Creating a timer property on the username object
+        this.password.timer = setTimeout( () => this.passwordAfterDelay(), 800)
+    }
 
-    usernameImmediately() {
-        if (this.username.value != '' && !/^([a-zA-Z0-9]+)$/.test(this.username.value)) {
-            this.showValidationErrors(this.username, 'Username can only contain letters and numbers')
+    passwordImmediately() {
+        
+        if (this.password.value.length > 50) {
+            this.showValidationErrors(this.password, 'Password cannot exceed 50 characters')
         }
 
-        if (this.username.value.length > 30) {
-            this.showValidationErrors(this.username, 'Username cannot exceed 30 characters')
+        if (!this.password.errors) {
+            this.hideValidationErrors(this.password)
+        }
+    }
+
+    passwordAfterDelay() {
+        
+        if (this.password.value.length < 12) {
+            this.showValidationErrors(this.password, 'Password must be at least 12 characters')
         }
 
-        if (!this.username.errors) {
-            this.hideValidationErrors(this.username)
-        }
     }
 
     showValidationErrors(element, message) {
@@ -184,28 +202,7 @@ export default class RegistrationForm {
         element.nextElementSibling.classList.remove('liveValidateMessage--visible')
     }
 
-    usernameAfterDelay() {
 
-        if (this.username.value.length < 3) {
-            this.showValidationErrors(this.username, 'Username must be at least 3 characters')
-        }
-
-        if (!this.username.errors) {
-
-            axios.post('/doesUsernameExist', {username: this.username.value}).then((response) => {
-                if (response.data) {
-                    this.showValidationErrors(this.username, 'That username is already taken.')
-                    this.username.isUnique = false
-                }else{
-                    this.username.isUnique = true
-                }
-            }).catch((error) =>{
-                console.log('please try again later')
-            })
-
-        }
-       
-    }
 
   
 

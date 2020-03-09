@@ -23,6 +23,10 @@ router.post('/login', userController.login)
 // Post route for User Logout Form 
 router.post('/logout', userController.logout)
 
+router.post('/doesUsernameExist', userController.doesUsernameExist)
+
+router.post('/doesEmailExist', userController.doesEmailExist)
+
 
 //  Post Related Routes 
 //=====================
