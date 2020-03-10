@@ -9,8 +9,6 @@ let Follow = function(followedUsername, authorId) {
     this.followedUsername = followedUsername
     this.authorId = authorId
     this.errors = []
-
-
 }
 
 
@@ -53,43 +51,67 @@ Follow.prototype.validate = async function(action) {
 }
 
 Follow.prototype.create = function () {
-    return new Promise( async (resolve, reject) => {
-        this.cleanUp()
-        await this.validate('create')
+    try {
 
-        if (!this.errors.length) {
-            await followsCollections.insertOne({followedId: this.followedId, authorId: new ObjectID(this.authorId)})
-            resolve()
-        } else{
-            reject(this.errors)
-        }
-    })
+        return new Promise( async (resolve, reject) => {
+
+            this.cleanUp()
+            await this.validate('create')
+
+            if (!this.errors.length) {
+                await followsCollections.insertOne({followedId: this.followedId, authorId: new ObjectID(this.authorId)})
+                resolve()
+            }
+
+        })
+        
+    } catch (error) {
+
+        reject(this.errors)
+        console.log(error)
+    }
 }
 
 Follow.prototype.delete = function () {
-    return new Promise( async (resolve, reject) => {
-        this.cleanUp()
-        await this.validate('delete')
 
-        if (!this.errors.length) {
-            await followsCollections.deleteOne({followedId: this.followedId, authorId: new ObjectID(this.authorId)})
-            resolve()
-        } else{
-            reject(this.errors)
-        }
-    })
+    try {
+
+        return new Promise( async (resolve, reject) => {
+
+            this.cleanUp()
+            await this.validate('delete')
+
+            if (!this.errors.length) {
+                await followsCollections.deleteOne({followedId: this.followedId, authorId: new ObjectID(this.authorId)})
+                resolve()
+            }
+
+        })
+        
+    } catch (error) {
+        reject(this.errors)
+        console.log(error)
+    }
+ 
 }
 
 Follow.isVisitorFollowing = async function(followedId, visitorId) {
 
-    let followDoc = await followsCollections.findOne({followedId: followedId, authorId: new ObjectID(visitorId)})
+    try{
 
-    if (followDoc) {
-        return true
-    } else{
-        return false
+        let followDoc = await followsCollections.findOne({followedId: followedId, authorId: new ObjectID(visitorId)})
+
+        if (followDoc) {
+            return true
+        } else{
+            return false
+        }
+
+    }catch (error) {
+
+        false
+        console.log(error)
     }
-
 
 }
 
@@ -113,7 +135,9 @@ Follow.getFollowersById = function(id) {
             resolve(followers)
             
         } catch (error) {
-            reject()
+            reject(error)
+            console.log(error)
+
         }
         
     })
@@ -140,24 +164,40 @@ Follow.getFolloweringById = function(id) {
             resolve(followers)
             
         } catch (error) {
-            reject()
+            reject(error)
+            console.log(error)
         }
         
     })
 }
 
 Follow.countFollowersById = function(id) {
-    return new Promise(async (resolve, reject) => {
-        let followerCount = await followsCollections.countDocuments({followedId: id})
-        resolve(followerCount)
-    })
+    try {
+
+        return new Promise(async (resolve, reject) => {
+            let followerCount = await followsCollections.countDocuments({followedId: id})
+            resolve(followerCount)
+        })
+        
+    } catch (error) {
+        reject(error)
+        console.log(error)
+    }
+
 }
 
 Follow.countFollowingById = function(id) {
-    return new Promise(async (resolve, reject) => {
-        let count = await followsCollections.countDocuments({authorId: id})
-        resolve(count)
-    })
+    try{
+
+        return new Promise(async (resolve, reject) => {
+            let count = await followsCollections.countDocuments({authorId: id})
+            resolve(count)
+        })
+
+    } catch(error) {
+        reject(error)
+        console.log(error)
+    }
 }
 
 module.exports = Follow

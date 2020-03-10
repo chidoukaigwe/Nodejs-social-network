@@ -169,8 +169,8 @@ Post.findByAuthorId(req.profileUser._id).then(function (posts) {
     counts: { postCount: req.postCount, followerCount: req.followerCount,followingCount: req.followingCount }
   })
   
-}).catch(function (){
-  res.render('404')
+}).catch(function (error){
+  res.render('404' . error)
 })
 
 }
@@ -189,7 +189,7 @@ exports.profileFollowersScreen = async function (req, res) {
       counts: { postCount: req.postCount, followerCount: req.followerCount,followingCount: req.followingCount }
     })
   } catch (error) {
-      res.render('404', error)
+      error
   }
 
 }

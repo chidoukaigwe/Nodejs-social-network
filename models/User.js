@@ -106,8 +106,12 @@ User.prototype.register = function() {
   })
 }
 
+// User.prototype.getAvatar = function() {
+//   this.avatar = `https://gravatar.com/avatar/${md5(this.data.email)}?s=128`
+// }
+
 User.prototype.getAvatar = function() {
-  this.avatar = `https://gravatar.com/avatar/${md5(this.data.email)}?s=128`
+  this.avatar = `https://gravatar.com/avatar/?s=128`
 }
 
 User.findByUsername = function (username) {
@@ -128,8 +132,9 @@ User.findByUsername = function (username) {
       }else{
         reject()
       }
-    }).catch(function () {
-      reject()
+    }).catch(function (error) {
+      console.log(error)
+      reject(error)
     })
   })
 }
