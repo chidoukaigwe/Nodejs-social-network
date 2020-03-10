@@ -106,6 +106,8 @@ User.prototype.register = function() {
   })
 }
 
+// See if you can add this at some point
+ 
 // User.prototype.getAvatar = function() {
 //   this.avatar = `https://gravatar.com/avatar/${md5(this.data.email)}?s=128`
 // }
