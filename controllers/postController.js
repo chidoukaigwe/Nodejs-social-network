@@ -1,4 +1,6 @@
 const Post = require('../models/Post')
+const sendgrid = require('@sendgrid/mail')
+sendgrid.setApiKey(process.env.SENDGRIDAPIKEY)
 
 // Show Create Post Screen To Logged In Users
 exports.viewCreateScreen = function(req, res) {
@@ -8,12 +10,28 @@ exports.viewCreateScreen = function(req, res) {
 exports.create = function (req, res) {
    let post = new Post(req.body, req.session.user._id)
    post.create().then(function (newId) {
+      sendgrid.send({
+        to: 'chidodesigns@gmail.com',
+        from: 'test@test.com',
+        subject: 'congrats on creating a new post',
+        text: 'You did a great job of creating a post',
+        html: '<strong>Faboulous Job</strong>'
+      })
       req.flash('success', 'New post successfully created.')
       req.session.save(() => res.redirect(`/post/${newId}`))
    }).catch(function (errors) {
       errors.forEach(error => req.flash('errors', error))
       req.session.save(() => res.redirect('/create-post'))
    })
+}
+
+exports.apiCreate = function (req, res) {
+  let post = new Post(req.body, req.apiUser._id)
+  post.create().then(function (newId) {
+     res.json('Congrats')
+  }).catch(function (errors) {
+    res.json(errors)
+  })
 }
 
 exports.viewSingle = async function(req, res) {
@@ -80,6 +98,14 @@ exports.delete = function(req, res) {
      req.session.save(() => res.redirect("/"))
    })
  }
+
+ exports.apiDelete = function(req, res) {
+  Post.delete(req.params.id, req.apiUser._id).then(() => {
+    res.json("Success")
+  }).catch(() => {
+    res.json("You do not have permission to perform that action")
+  })
+}
 
 exports.search = function(req, res) {
    Post.search(req.body.searchTerm).then( posts => {

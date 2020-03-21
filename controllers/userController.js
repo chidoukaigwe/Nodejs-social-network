@@ -7,6 +7,9 @@ const Post = require('../models/Post')
 // Bring in Follow Model
 const Follow = require('../models/Follow')
 
+//  Bring In JSON Web Token Package
+const jwt = require('jsonwebtoken')
+
 exports.doesUsernameExist = function(req, res) {
 
   User.findByUsername(req.body.username).then(() => {
@@ -91,6 +94,17 @@ exports.login = function (req, res) {
     req.session.save(function() {
       res.redirect('/')
     })
+  })
+}
+
+//  req & res come from the callback function made within router.js and therefore router.js can pass the two args (req & res)
+exports.apiLogin = function (req, res) {
+  let user = new User(req.body)
+  //  Passing this function as an argument into the login function
+  user.login().then(function (result) {
+    res.json(jwt.sign({_id: user.data._id}, process.env.JWTSECRET, {expiresIn: '7d'}))
+  }).catch(function (err) {
+    res.json("Sorry your values was not correct")
   })
 }
 
@@ -211,4 +225,23 @@ exports.profileFollowersScreen = async function (req, res) {
         res.render('404', error)
     }
   
+  }
+
+  exports.apiMustBeLoggedIn = function (req, res, next) {
+    try {
+      req.apiUser = jwt.verify(req.body.token, process.env.JWTSECRET)
+      next()
+    } catch (error) {
+      res.json('Sorry you must provide a valid token')
+    }
+  }
+
+  exports.apiGetPostsByUsername = async function (req, res) {
+    try {
+      let authorDoc = await User.findByUsername(req.params.username)
+      let posts = await Post.findByAuthorId(authorDoc._id)
+      res.json(posts)
+    } catch (error) {
+      res.json("Sorry invalid user request")
+    }
   }

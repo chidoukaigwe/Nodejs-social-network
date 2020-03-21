@@ -1,6 +1,8 @@
 //  File we add new request features
 
 const express = require('express')
+// Dealing with cross site scripting
+const csrf = require('csurf')
 //  Cache User Sessions
 const session = require('express-session')
 //  Cache user Sessions on the DB - capitalised to indicate we will be creating objects from this.
@@ -9,7 +11,18 @@ const MongoStore = require('connect-mongo')(session)
 const flash = require('connect-flash')
 const markdown = require('marked')
 const sanitizeHTML = require('sanitize-html')
+
 const app = express()
+
+//  [ two most common ways of accepting data across the web ]
+//  Boilerplate Code add user submitted data onto our request object so we can access it via req.body
+app.use(express.urlencoded({ extended: false }))
+app.use(express.json())
+
+// API Router  - As this line of code is above the app.use() function that will bring in a bunch of code - this API router does not have to apply those functions calls within the app.use main function, therefore making the route lighter
+app.use('/api', require('./router-api'))
+
+
 
 //  Boilerplate Config Code
 let sessionOptions = session({
@@ -54,11 +67,6 @@ app.use(function (req, res, next) {
 
 const router = require('./router')
 
-//  [ two most common ways of accepting data across the web ]
-//  Boilerplate Code add user submitted data onto our request object so we can access it via req.body
-app.use(express.urlencoded({ extended: false }))
-app.use(express.json())
-
 //  Make public files accessible (css/browserJS)
 app.use(express.static('public'))
 //  Render template file 1st Argument Express option called views [ 2nd Argument is the folder to look in ]
@@ -67,7 +75,31 @@ app.set('views', 'views')
 //  We tell express to use the EJS template engine - install via NPM
 app.set('view engine', 'ejs')
 
+// Any of the HTTP Methods POST CREATE DELETE PUT - will have to have a matching CSRF Token
+app.use(csrf())
+
+// Make Token Availabe To Use In Templates
+app.use(function (req, res, next) {
+  res.locals.csrfToken = req.csrfToken()
+  next()
+})
+
 app.use('/', router)
+
+app.use(function (err, req, res, next) {
+
+  if (err) {
+
+    if(err.code == 'EBADCSRFTOKEN') {
+      req.flash('errors', 'Cross site request forgery detected')
+      req.session.save(() => res.redirect('/'))
+    }else{
+      res.render('404')
+    }
+
+  }
+
+})
 
 const server = require('http').createServer(app)
 const io = require('socket.io')(server)
