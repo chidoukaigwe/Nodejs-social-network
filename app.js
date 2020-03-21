@@ -1,6 +1,8 @@
 //  File we add new request features
 
 const express = require('express')
+// Dealing with cross site scripting
+const csrf = require('csurf')
 //  Cache User Sessions
 const session = require('express-session')
 //  Cache user Sessions on the DB - capitalised to indicate we will be creating objects from this.
@@ -67,7 +69,31 @@ app.set('views', 'views')
 //  We tell express to use the EJS template engine - install via NPM
 app.set('view engine', 'ejs')
 
+// Any of the HTTP Methods POST CREATE DELETE PUT - will have to have a matching CSRF Token
+app.use(csrf())
+
+// Make Token Availabe To Use In Templates
+app.use(function (req, res, next) {
+  res.locals.csrfToken = req.csrfToken()
+  next()
+})
+
 app.use('/', router)
+
+app.use(function (err, req, res, next) {
+
+  if (err) {
+
+    if(err.code == 'EBADCSRFTOKEN') {
+      req.flash('errors', 'Cross site request forgery detected')
+      req.session.save(() => res.redirect('/'))
+    }else{
+      res.render('404')
+    }
+
+  }
+
+})
 
 const server = require('http').createServer(app)
 const io = require('socket.io')(server)
