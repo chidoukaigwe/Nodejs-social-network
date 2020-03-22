@@ -2,7 +2,7 @@
   "name": "complexnodejsapp",
   "version": "1.0.0",
   "description": "",
-  "main": "app.js",
+  "main": "db.js",
   "scripts": {
     "start": "nodemon db & webpack --watch",
     "watch": "nodemon db --ignore frontend-js --ignore public/ & webpack --watch ",
