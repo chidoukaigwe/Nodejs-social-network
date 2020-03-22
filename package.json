@@ -2,9 +2,9 @@
   "name": "complexnodejsapp",
   "version": "1.0.0",
   "description": "",
-  "main": "db.js",
+  "main": "app.js",
   "scripts": {
-    "start": "nodemon db",
+    "start": "nodemon db & webpack --watch",
     "watch": "nodemon db --ignore frontend-js --ignore public/ & webpack --watch ",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
